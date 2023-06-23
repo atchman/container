@@ -1,8 +1,10 @@
 FROM postgres:alpine3.18 AS builder
 
-USER ${USER}
+ENV POSTGRES_USER ./secret
+ENV POSTGRES_PASSWORD ./secret
+ENV POSTGRES_DB ${DATABASE_NAME]
 
-WORKDIR /home/${USER}
+
 
 ADD --chown=${USER}:${USER} . /home/${USER}
 
