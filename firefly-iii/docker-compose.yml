@@ -1,0 +1,60 @@
+# docker-compose of firefly iii
+# 
+version: "3"
+
+networks:
+  firefly_iii-net:
+    driver: bridge
+    external: false
+
+volumes:
+   firefly_iii_upload:
+   firefly_iii_db:
+
+services:
+  app:
+    image: fireflyiii/core:latest
+    container_name: firefly_iii_core
+    hostname: app
+    restart: always
+    env_file: .env
+    networks:
+      - firefly_iii-net
+    ports:
+      - "127.0.0.1:80:8080"
+    volumes:
+      - firefly_iii_upload:/var/www/html/storage/upload
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:lts
+    container_name: firefly_iii_db
+    hostname: db
+    restart: always
+    environment:
+      - MYSQL_DATABASE=firefly
+      - MYSQL_USER=firefly
+      - MYSQL_PASSWORD=secret_firefly_password
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+    env_file: .db.env
+    networks:
+      - firefly_iii-net
+    volumes:
+      - firefly_iii_db:/var/lib/mysql
+
+#DB_HOST, DB_DATABASE, DB_USERNAME, DB_PASSWORD, DB_CONNECTION=pgsql
+
+  cron:
+    #
+    # To make this work, set STATIC_CRON_TOKEN in your .env file or as an environment variable and replace REPLACEME below
+    # The STATIC_CRON_TOKEN must be *exactly* 32 characters long
+    #
+    image: alpine
+    container_name: firefly_iii_cron
+    restart: always
+    command: sh -c "echo \"0 3 * * * wget -qO- http://app:8080/api/v1/cron/REPLACEME;echo\" | crontab - && crond -f -L /dev/stdout"
+    networks:
+      - firefly_iii-net
+
+

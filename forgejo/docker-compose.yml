@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 name: forgejo
 
@@ -7,13 +7,13 @@ networks:
     external: false
 
 volumes:
-  data:
+  forgejo-data:
     driver: local
     driver_opts:
       type: none
       o: bind
     device: /container/forgejo/data
-  git-data:
+  forgejo-git:
     external: true
   log:
   tmp:
