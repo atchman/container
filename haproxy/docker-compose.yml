@@ -1,0 +1,23 @@
+version: "3"
+name: "haproxy"
+
+networks:
+  haproxy-net:
+    driver: host
+    external: false
+
+volumes:
+  config-vol:
+
+services:
+  proxy:
+    image: haproxytech/haproxy-alpine:3.0.5
+    container_name: haproxy
+    restart: always
+    networks:
+      - haproxy-net
+    port:
+      - "127.0.0.1:80:80"
+      - "127.0.0.1:8404:8404"
+    volumes:
+      - config-vol:/usr/local/etc/haproxy:ro
