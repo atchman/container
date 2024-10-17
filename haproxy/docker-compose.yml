@@ -8,7 +8,11 @@ networks:
 
 volumes:
   config-vol:
-
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+    device: ./haproxy.cfg
 services:
   proxy:
     image: haproxytech/haproxy-alpine:3.0.5
@@ -20,4 +24,4 @@ services:
       - "127.0.0.1:80:80"
       - "127.0.0.1:8404:8404"
     volumes:
-      - config-vol:/usr/local/etc/haproxy:ro
+      - config-vol:/etc/haproxy/haproxy.cfg:ro

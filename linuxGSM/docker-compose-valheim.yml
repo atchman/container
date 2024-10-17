@@ -1,0 +1,28 @@
+version: "3.8"
+name: "valheim"
+
+networks:
+  valheim-net:
+
+volumes:
+  data-vol:
+
+services:
+  linuxgsm-valheim:
+    image: gameservermanagers/gameserver:vh
+    # image: ghcr.io/gameservermanagers/gameserver:vh
+    container_name: valheim-server
+    restart: on-failure:3
+    networks:
+      - valheim-net
+    ports:
+      - "127.0.0.1:27015:27015/tcp"
+      - "127.0.0.1:27015:27015/udp"
+      - "127.0.0.1:27020:27020/udp"
+      - "127.0.0.1:27005:27005/udp"
+    volumes:
+      - data-vol:/data
+
+
+
+

@@ -34,7 +34,7 @@ volumes:
     
 services:
   server:
-    image: codeberg.org/forgejo/forgejo:8-rootless
+    image: codeberg.org/forgejo/forgejo:9-rootless
     container_name: forgejo
     restart: on-failure:3
     read_only: "true"
