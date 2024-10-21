@@ -1,0 +1,20 @@
+create:
+    sudo useradd --no-create-home --disabled-login --shell /bin/false --group forgejo
+    sudo useradd --home-dir /opt/forgejo --create-home --shell /bin/bash forgejo
+    podman volume create forgejo-data-vol
+    podman volume create forgejo-config-vol
+
+build:
+    podman
+
+run:
+    podman container run \
+            --detach \
+            --env MARIADB_ROOT_PASSWORD=toor \
+            --env MARIADB_DATABASE=forgejo \
+            --env MARIADB_USER=forgejo \
+            --env MARIADB_PASSWORD=forgejo \
+            --volume /opt/forgejo/database:/var/lib/mysql/ \
+            --network forgejo-network \
+            --name forgejo-database \
+             
