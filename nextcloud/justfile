@@ -1,0 +1,7 @@
+build:
+  echo -n "secret" | docker secret create nx_postgres_user -
+  docker secret create nx_postgres_pw $XDG_RUNTIME_DIR/nx-secret/
+  nx_admin_user:
+  nx_admin_pw:
+  nx_valkey_pw:
+

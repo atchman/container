@@ -1,0 +1,124 @@
+version: "3.8"
+name: "nextcloud"
+
+
+networks:
+  nx-net:
+    external: false
+
+
+volumes:
+  nx-vol:
+  nx-apps-vol:
+  nx-config-vol:
+  nx-data-vol:
+  nx-theme-vol:
+  db-vol:
+
+
+secrets:
+  nx_postgres_user:
+    external: true 
+  nx_postgres_pw:
+    file: "./secrets/nx_postgres_pw"
+  nx_admin_user:
+    file: "./secrets/nx_admin_user"
+  nx_admin_pw:
+    file: "./secrets/nx_admin_pw"
+  nx_valkey_pw:
+    file: "./secrets/nx_valkey_pw"
+
+
+service:
+  db:
+    image: "postgres:17.0-alpine3.20"
+    restart: always
+    enviroment:
+      - POSTGRES_DB=nextcloud
+      - POSTGRES_USER=/run/secrets/nx_postgres_user
+      - POSTGRES_PASSWORD=/run/secrets/nx_postgres_pw
+    networks:
+      nx-net:
+        aliases:
+          - "nx-postgres"
+    volumes:
+      - db-vol:/var/lib/postgresql/data:Z
+    secrets:
+      - nx_postgres_user
+      - nx_postgres_pw
+
+
+  valkey:
+    image: "valkey/valkey:8.0.1-alpine"
+    hostname: "valkey"
+    restart: always
+    networks:
+      nx-net:
+        aliases:
+          - "valkey"
+
+
+  app:
+    image: "nextcloud:30.0.1-fpm-alpine"
+    container_name: nextcloud
+    restart: always
+    enviroment:
+      - POSTGRES_HOST=nx-postgres
+      - POSTGRES_DB=nextcloud
+      - POSTGRES_USER=/run/secrets/nx_postgres_user
+      - POSTGRES_PASSWORD=/run/secrets/nx_postgres_pw
+      - NEXTCLOUD_ADMIN_USER_FILE=/run/secrets/nx_admin_user
+      - NEXTCLOUD_ADMIN_PASSWORD_FILE=/run/secrets/nx_admin_pw
+      - NEXTCLOUD_INIT_HTACCESS=true
+      - REDIS_HOST=valkey
+      - REDIS_HOST_PASSWORD=/run/secrets/nx_valkey_pw
+      - PHP_MEMORY_LIMIT=512M
+      - PHP_UPLOAD_LIMIT=1G
+    networks:
+      - nx-net
+#    ports:
+#      - 
+    volumes:
+      - nx-vol:/var/www/html:z
+      - nx-apps-vol:/var/www/html/custom_apps:z
+      - nx-config-vol:/var/www/html/config:z
+      - nx-data-vol:/var/www/html/data:z
+#      - nx-theme-vol:/var/www/html/themes/<YOUR_CUSTOM_THEME>:z
+    depends_on:
+      - db
+      - valkey
+    secrets:
+      - nx_postgres_user
+      - nx_postgres_pw
+      - nx_admin_user
+      - nx_admin_pw
+      - nx_valkey_pw
+
+
+  web:
+    build: ./web
+    restart: always
+    ports: "127.0.0.1:8080:80"
+    volumes:
+      - nx-vol:/var/www/html:z,ro
+      - nx-apps-vol:/var/www/html/custom_apps:z,ro
+      - nx-config-vol:/var/www/html/config:z,ro
+      - nx-data-vol:/var/www/html/data:z,ro
+#      - nx-theme-vol:/var/www/html/themes/<YOUR_CUSTOM_THEME>:z,ro
+    depends_on:
+      - app
+
+    
+  cron:
+    image: "nextcloud:30.0.1-fpm-alpine"
+    restart: always
+    volumes:
+      - nx-vol:/var/www/html:z
+      - nx-apps-vol:/var/www/html/custom_apps:z
+      - nx-config-vol:/var/www/html/config:z
+      - nx-data-vol:/var/www/html/data:z
+#      - nx-theme-vol:/var/www/html/themes/<YOUR_CUSTOM_THEME>:z
+    entrypoint: /cron.sh
+    depends_on:
+      - db
+      - valkey
