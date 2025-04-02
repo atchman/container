@@ -1,11 +1,12 @@
-# container
+# docker
 
-big collection of containers
+- Dockerfile
+- docker-compose 
 either to test, configure services or simply for viewing
 
 ## example of the basic structure
 
-    ├── container       # parent folder
+    ├── compose       # parent folder
     │   ├── justfile
     │   ├── forgejo     # child folder
     │   │   ├── docker-compose.yml
@@ -14,4 +15,3 @@ either to test, configure services or simply for viewing
     │   │   ├── .env
     │   ├── ...         # child folder
     
-# 
